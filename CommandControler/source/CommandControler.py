@@ -3,6 +3,27 @@ import difflib
 
 class CommandControler:
     def __init__(self,commandDict:dict,name:str="未命名",prefix:str='/',version:str="1.0.0.0",introduce:str=""):
+        '''
+        :param commandDict: 指令集字典
+        格式要求:
+        {
+            '指令名(ps:可通过|表示同义指令 示例-add|--a)': {
+                'message': "指令信息 使用[{指令集前缀}?|help {该指令名}] 会得到该条信息",
+                'helpMessage': "帮助信息 使用[{指令集前缀}?|help]时，该指令后方显示",
+                'function': [调用该指令时执行的函数 详情见后],
+                'childCommand': {子指令集字典，格式相同},
+            },
+        }
+        function示例:
+        def 函数名(
+            param[该指令后方的切片字符串数组，已切割],
+            (*args,**kwargs[doCommand方法指令字符串参数的后方参数不需要时设置为此])
+            |(a,b,c[doCommand方法指令字符串参数的后方参数]))
+        :param name: 指令集名
+        :param prefix: 指令集识别前缀
+        :param version: 指令集版本
+        :param introduce: 指令集介绍
+        '''
         self.name = name
         self.prefix = prefix
         self.version = version
@@ -112,7 +133,9 @@ class CommandControler:
             return "前缀为->\""+self.prefix+"\"指令集中无\""+commandPath+"\"指令"\
                    +command.get("helpMessage")
     def doCommand(self,allStr,*args,**kwargs)->str:
-        if allStr[:len(self.prefix)] == self.prefix and allStr[len(self.prefix)]!=' ':
+        if allStr[:len(self.prefix)] == self.prefix \
+                and len(allStr) > len(self.prefix) \
+                and allStr[len(self.prefix)] != ' ':
             commandStr = allStr[len(self.prefix):]
             return self.__dealCommandStr(' '.join(commandStr.split()).split(' '),*args,**kwargs)
         else: return "None"

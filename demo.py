@@ -1,59 +1,98 @@
 # -*- coding: utf-8 -*-
 from CommandControler import CommandControler
 
-def userContro(param,*args,**kwargs):
-    return "这是userContro"+str(param)
-def userContro_a(param,fromUser):
-    return "这是userContro_a"+str(param)+fromUser
-def userContro_d(param,fromUser):
-    return "这是userContro_d"+str(param)+fromUser
-def userContro_gmd(param,fromUser):
-    return "这是userContro_d"+str(param)+fromUser
-
-if __name__ == '__main__':
-    # 最小示例
+def simpleExample():
+    # 最小实例
     demoCC = CommandControler(
         name="控制台",
         introduce="demo",
         commandDict={
             'add|a': {
-                'message': "添加",
-                'helpMessage': '添加',
-                'function': lambda param,x:str(param)+x,
+                'message': "相加俩个值",
+                'helpMessage': '加 [x:int,y:int]',
+                'function':
+                    lambda param,*args,**kwargs:\
+                        (int(param[0]) + int(param[1])),
+            },
+            'getId|gi': {
+                'message': "获取id",
+                'helpMessage': '获取id',
+                'function': lambda param,userId:userId,
             },
         })
-    mcc = CommandControler(
-        prefix="#",
-        name="打卡控制台",
-        version="1.0.0.0",
-        introduce="疫情打卡控制台",
-        commandDict={
-            'userContro|uc': {
-                'message': "用户管理",
-                'helpMessage': '对在进行签到的用户进行管理',
-                'function': userContro,
-                'childCommand': {
-                    '-add|--a': {
-                        'message': "添加用户",
-                        'helpMessage': '添加一个用户到签到管理中 [userName:str,PWD:str]',
-                        'function': userContro_a,
-                    },
-                    '-delete|--d': {
-                        'message': "删除用户",
-                        'helpMessage': '通过用户名从签到管理中删除一个用户 [userName:str]',
-                        'function': userContro_d,
-                    },
-                    '-getMyData|--gmd': {
-                        'message': "获取签到信息",
-                        'helpMessage': '获取最近我的签到信息 [len:int<3]',
-                        'function': userContro_gmd,
-                    },
-                }
-            },
-        })
+    # 使用
     while True:
         inStr = input('->')
-        resp = demoCC.doCommand(inStr)
-        if resp!='None': print(resp);continue
-        resp = mcc.doCommand(inStr)
-        if resp!='None': print(resp);continue
+        resp = demoCC.doCommand(inStr, userId="0001")
+        if resp != 'None': print(resp);continue
+
+def normalExample():
+    def getFab(param,*args,**kwargs):
+        def fab(number):
+            if number==1 or number==2:
+                return 1
+            else:
+                return fab(number-1)+fab(number-2)
+        return fab(int(param[0]))
+    normal_countCommandDict = {
+        'add|-a': {
+            'message': "相加俩个值",
+            'helpMessage': '加 [x:int,y:int]',
+            'function':
+                lambda param,*args,**kwargs:\
+                    (int(param[0]) + int(param[1])),
+        },
+        'minus|-m': {
+            'message': "相减俩个值",
+            'helpMessage': '减 [x:int,y:int]',
+            'function':
+                lambda param,*args,**kwargs:\
+                    (int(param[0]) - int(param[1])),
+        },}
+    science_countCommandDict = {
+        'index|-i': {
+            'message': "求一个数的指数",
+            'helpMessage': '指数运算 [x:int,y:int]',
+            'function':
+                lambda param,*args,**kwargs:\
+                    pow(int(param[0]),int(param[1])),
+        },
+        'getFab|gf': {
+            'message': "求斐波那契数列第n项",
+            'helpMessage': '求斐波那契数列 [n:int]',
+            'function': getFab,
+        },}
+    countCommandDict = {
+        'normal|-n': {
+            'message': "普通计算器",
+            'helpMessage': '普通计算器能计算加减',
+            'function':lambda param,*args,**kwargs:"一个普通计算器",
+            'childCommand':normal_countCommandDict,
+        },
+        'science|-s': {
+            'message': "科学计算器",
+            'helpMessage': '科学计算器能进行指数运算',
+            'function':lambda param,*args,**kwargs:"一个科学计算器",
+            'childCommand':science_countCommandDict,
+        },
+    }
+    # 实例0
+    countCC = CommandControler(
+        name="计算器",prefix="#-",version="1.0.0",
+        introduce="一个通过指令控制的计算器",
+        commandDict=countCommandDict)
+    # 实例1
+    scienceCC = CommandControler(
+        name="科学计算器",prefix="kx",version="1.0.0",
+        introduce="科学计算器",
+        commandDict=science_countCommandDict)
+    # 使用
+    while True:
+        inStr = input('->')
+        resp = countCC.doCommand(inStr)
+        if resp != 'None': print(resp);continue
+        resp = scienceCC.doCommand(inStr)
+        if resp != 'None': print(resp);continue
+
+if __name__ == '__main__':
+    normalExample()
